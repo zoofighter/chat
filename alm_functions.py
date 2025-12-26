@@ -67,6 +67,74 @@ for table_name, columns in tables.items():
     print(f"  주요 컬럼: {', '.join(columns[:5])}...")
 
 # ======================================================================
+# 스키마 설명 조회 (캐싱)
+# ======================================================================
+
+# 컬럼 설명 캐시
+_column_descriptions_cache: Dict[str, str] = {}
+
+def get_column_description(table_name: str, column_name: str) -> Optional[str]:
+    """
+    컬럼 설명 조회 (캐싱 포함)
+
+    Args:
+        table_name: 테이블명 (예: 'ALM_INST', 'INST_ALM_01')
+        column_name: 컬럼명 (예: 'DIM_PROD')
+
+    Returns:
+        컬럼 설명 (없으면 None)
+    """
+    cache_key = f"{table_name}.{column_name}"
+
+    # 캐시 확인
+    if cache_key in _column_descriptions_cache:
+        return _column_descriptions_cache[cache_key]
+
+    # DB 조회
+    try:
+        query = f"""
+        SELECT description
+        FROM column_descriptions
+        WHERE table_name = '{table_name}'
+          AND column_name = '{column_name}'
+        LIMIT 1
+        """
+
+        result = execute_sql_query(query)
+
+        if result['success'] and result['row_count'] > 0:
+            desc = result['data'][0]['description']
+            _column_descriptions_cache[cache_key] = desc
+            return desc
+        else:
+            # 없으면 None 캐싱 (재조회 방지)
+            _column_descriptions_cache[cache_key] = None
+            return None
+    except Exception as e:
+        return None
+
+def get_column_label(column_name: str, table_name: str = 'ALM_INST') -> str:
+    """
+    컬럼 레이블 반환 (형식: "컬럼명 (설명)")
+
+    Args:
+        column_name: 컬럼명
+        table_name: 테이블명 (기본값: 'ALM_INST')
+
+    Returns:
+        "DIM_PROD (차원-상품코드)" 또는 "DIM_PROD" (설명 없을 시)
+    """
+    # ALM_INST에 설명이 없으면 INST_ALM_01 확인
+    desc = get_column_description(table_name, column_name)
+    if desc is None and table_name == 'ALM_INST':
+        desc = get_column_description('INST_ALM_01', column_name)
+
+    if desc:
+        return f"{column_name} ({desc})"
+    else:
+        return column_name
+
+# ======================================================================
 # 비즈니스 로직 함수들
 # ======================================================================
 
@@ -569,6 +637,446 @@ def analyze_trends(
             trends['statistics']['slope'] = float(slope)
 
     return trends
+
+
+# ============================================================
+# 신규 포지션 증가분 분석
+# ============================================================
+
+def analyze_new_position_growth(
+    current_base_date: str,
+    previous_base_date: Optional[str] = None,
+    group_by_dimensions: Optional[List[str]] = None
+) -> Dict[str, Any]:
+    """
+    당월 신규 포지션 증가분 분석
+
+    이전 기준일 대비 새로 추가된 계약(REFERENCE_NO)을 식별하고
+    차원별로 집계하여 신규 포지션 증가분을 분석합니다.
+
+    Args:
+        current_base_date: 현재 기준일 (YYYY-MM-DD)
+        previous_base_date: 이전 기준일 (None이면 자동으로 직전 BASE_DATE 선택)
+        group_by_dimensions: 그룹화 차원 리스트 ['DIM_PROD', 'DIM_ORG', 'DIM_ALM']
+                            None이면 모든 차원으로 분석
+
+    Returns:
+        {
+            'current_date': str,
+            'previous_date': str,
+            'new_contracts': {
+                'count': int,
+                'total_balance': float,
+                'contracts': List[Dict]  # 신규 계약 샘플 (최대 5건)
+            },
+            'dimensional_breakdown': {
+                'by_product': List[Dict],   # DIM_PROD별 신규 집계
+                'by_org': List[Dict],       # DIM_ORG별 신규 집계
+                'by_alm': List[Dict]        # DIM_ALM별 신규 집계
+            },
+            'summary': str
+        }
+    """
+
+    # 1. previous_base_date 자동 선택 (None인 경우)
+    if previous_base_date is None:
+        query = f"""
+        SELECT DISTINCT BASE_DATE
+        FROM ALM_INST
+        WHERE BASE_DATE LIKE '{current_base_date}%'
+           OR BASE_DATE < '{current_base_date}'
+        ORDER BY BASE_DATE DESC
+        LIMIT 2
+        """
+
+        result = execute_sql_query(query)
+
+        if result['success'] and result['row_count'] >= 2:
+            # Get the second one (first is current_base_date itself)
+            previous_base_date = result['data'][1]['BASE_DATE']
+        elif result['success'] and result['row_count'] == 1:
+            # Only one date found, try to get previous
+            query = f"""
+            SELECT DISTINCT BASE_DATE
+            FROM ALM_INST
+            WHERE BASE_DATE < '{current_base_date}'
+            ORDER BY BASE_DATE DESC
+            LIMIT 1
+            """
+            result2 = execute_sql_query(query)
+            if result2['success'] and result2['row_count'] > 0:
+                previous_base_date = result2['data'][0]['BASE_DATE']
+            else:
+                return {
+                    'error': f"이전 기준일을 찾을 수 없습니다. {current_base_date}보다 이전 데이터가 없습니다."
+                }
+        else:
+            return {
+                'error': f"이전 기준일을 찾을 수 없습니다. {current_base_date}보다 이전 데이터가 없습니다."
+            }
+
+    # 2. 신규 계약 식별 및 기본 통계
+    new_contracts_query = f"""
+    SELECT
+        t1.REFERENCE_NO,
+        t1.CURRENCY_CD,
+        t1.CUR_PAR_BAL,
+        t1.CUR_RATE,
+        t1.DIM_PROD,
+        t1.DIM_ORG,
+        t1.DIM_ALM
+    FROM ALM_INST t1
+    LEFT JOIN ALM_INST t2
+        ON t1.REFERENCE_NO = t2.REFERENCE_NO
+        AND t2.BASE_DATE LIKE '{previous_base_date[:10]}%'
+    WHERE t1.BASE_DATE LIKE '{current_base_date[:10]}%'
+      AND t2.REFERENCE_NO IS NULL
+    """
+
+    new_contracts_result = execute_sql_query(new_contracts_query)
+
+    if not new_contracts_result['success']:
+        return {
+            'error': f"신규 계약 조회 실패: {new_contracts_result['error']}"
+        }
+
+    df = new_contracts_result['dataframe']
+
+    # 신규 계약이 없는 경우
+    if len(df) == 0:
+        return {
+            'current_date': current_base_date,
+            'previous_date': previous_base_date,
+            'new_contracts': {
+                'count': 0,
+                'total_balance': 0,
+                'contracts': []
+            },
+            'dimensional_breakdown': {
+                'by_product': [],
+                'by_org': [],
+                'by_alm': []
+            },
+            'summary': f"{current_base_date} 기준 신규 계약이 없습니다 (비교: {previous_base_date})"
+        }
+
+    # 기본 통계
+    new_count = len(df)
+    total_balance = df['CUR_PAR_BAL'].sum() if 'CUR_PAR_BAL' in df.columns else 0
+
+    # 샘플 계약 (최대 5건)
+    sample_contracts = new_contracts_result['data'][:5]
+
+    # 3. 차원별 집계
+    dimensional_breakdown = {
+        'by_product': [],
+        'by_org': [],
+        'by_alm': []
+    }
+
+    # 기본 차원 설정
+    if group_by_dimensions is None:
+        group_by_dimensions = ['DIM_PROD', 'DIM_ORG', 'DIM_ALM']
+
+    # DIM_PROD별 집계
+    if 'DIM_PROD' in group_by_dimensions:
+        dim_query = f"""
+        SELECT
+            t1.DIM_PROD as 차원값,
+            COUNT(DISTINCT t1.REFERENCE_NO) as 신규건수,
+            SUM(t1.CUR_PAR_BAL) as 신규잔액
+        FROM ALM_INST t1
+        LEFT JOIN ALM_INST t2
+            ON t1.REFERENCE_NO = t2.REFERENCE_NO
+            AND t2.BASE_DATE LIKE '{previous_base_date[:10]}%'
+        WHERE t1.BASE_DATE LIKE '{current_base_date[:10]}%'
+          AND t2.REFERENCE_NO IS NULL
+          AND t1.DIM_PROD IS NOT NULL
+        GROUP BY t1.DIM_PROD
+        ORDER BY 신규잔액 DESC
+        """
+
+        dim_result = execute_sql_query(dim_query)
+        if dim_result['success']:
+            dimensional_breakdown['by_product'] = dim_result['data']
+
+    # DIM_ORG별 집계
+    if 'DIM_ORG' in group_by_dimensions:
+        dim_query = f"""
+        SELECT
+            t1.DIM_ORG as 차원값,
+            COUNT(DISTINCT t1.REFERENCE_NO) as 신규건수,
+            SUM(t1.CUR_PAR_BAL) as 신규잔액
+        FROM ALM_INST t1
+        LEFT JOIN ALM_INST t2
+            ON t1.REFERENCE_NO = t2.REFERENCE_NO
+            AND t2.BASE_DATE LIKE '{previous_base_date[:10]}%'
+        WHERE t1.BASE_DATE LIKE '{current_base_date[:10]}%'
+          AND t2.REFERENCE_NO IS NULL
+          AND t1.DIM_ORG IS NOT NULL
+        GROUP BY t1.DIM_ORG
+        ORDER BY 신규잔액 DESC
+        """
+
+        dim_result = execute_sql_query(dim_query)
+        if dim_result['success']:
+            dimensional_breakdown['by_org'] = dim_result['data']
+
+    # DIM_ALM별 집계
+    if 'DIM_ALM' in group_by_dimensions:
+        dim_query = f"""
+        SELECT
+            t1.DIM_ALM as 차원값,
+            COUNT(DISTINCT t1.REFERENCE_NO) as 신규건수,
+            SUM(t1.CUR_PAR_BAL) as 신규잔액
+        FROM ALM_INST t1
+        LEFT JOIN ALM_INST t2
+            ON t1.REFERENCE_NO = t2.REFERENCE_NO
+            AND t2.BASE_DATE LIKE '{previous_base_date[:10]}%'
+        WHERE t1.BASE_DATE LIKE '{current_base_date[:10]}%'
+          AND t2.REFERENCE_NO IS NULL
+          AND t1.DIM_ALM IS NOT NULL
+        GROUP BY t1.DIM_ALM
+        ORDER BY 신규잔액 DESC
+        """
+
+        dim_result = execute_sql_query(dim_query)
+        if dim_result['success']:
+            dimensional_breakdown['by_alm'] = dim_result['data']
+
+    # 4. 요약 생성
+    summary = f"{current_base_date} 기준 신규 {new_count}건, 총 잔액 {total_balance:,.0f} (비교: {previous_base_date})"
+
+    return {
+        'current_date': current_base_date,
+        'previous_date': previous_base_date,
+        'new_contracts': {
+            'count': new_count,
+            'total_balance': float(total_balance),
+            'contracts': sample_contracts
+        },
+        'dimensional_breakdown': dimensional_breakdown,
+        'summary': summary
+    }
+
+
+# ============================================================
+# 소멸 포지션 감소분 분석
+# ============================================================
+
+def analyze_expired_position_decrease(
+    current_base_date: str,
+    previous_base_date: Optional[str] = None,
+    group_by_dimensions: Optional[List[str]] = None
+) -> Dict[str, Any]:
+    """
+    당월 소멸 포지션 감소분 분석
+
+    이전 기준일에는 존재했지만 현재 기준일에는 사라진 계약(REFERENCE_NO)을 식별하고
+    차원별로 집계하여 소멸 포지션 감소분을 분석합니다.
+
+    Args:
+        current_base_date: 현재 기준일 (YYYY-MM-DD)
+        previous_base_date: 이전 기준일 (None이면 자동으로 직전 BASE_DATE 선택)
+        group_by_dimensions: 그룹화 차원 리스트 ['DIM_PROD', 'DIM_ORG', 'DIM_ALM']
+                            None이면 모든 차원으로 분석
+
+    Returns:
+        {
+            'current_date': str,
+            'previous_date': str,
+            'expired_contracts': {
+                'count': int,
+                'total_balance': float,
+                'contracts': List[Dict]  # 소멸 계약 샘플 (최대 5건)
+            },
+            'dimensional_breakdown': {
+                'by_product': List[Dict],   # DIM_PROD별 소멸 집계
+                'by_org': List[Dict],       # DIM_ORG별 소멸 집계
+                'by_alm': List[Dict]        # DIM_ALM별 소멸 집계
+            },
+            'summary': str
+        }
+    """
+
+    # 1. previous_base_date 자동 선택 (None인 경우)
+    if previous_base_date is None:
+        query = f"""
+        SELECT DISTINCT BASE_DATE
+        FROM ALM_INST
+        WHERE BASE_DATE LIKE '{current_base_date}%'
+           OR BASE_DATE < '{current_base_date}'
+        ORDER BY BASE_DATE DESC
+        LIMIT 2
+        """
+
+        result = execute_sql_query(query)
+
+        if result['success'] and result['row_count'] >= 2:
+            previous_base_date = result['data'][1]['BASE_DATE']
+        elif result['success'] and result['row_count'] == 1:
+            query = f"""
+            SELECT DISTINCT BASE_DATE
+            FROM ALM_INST
+            WHERE BASE_DATE < '{current_base_date}'
+            ORDER BY BASE_DATE DESC
+            LIMIT 1
+            """
+            result2 = execute_sql_query(query)
+            if result2['success'] and result2['row_count'] > 0:
+                previous_base_date = result2['data'][0]['BASE_DATE']
+            else:
+                return {
+                    'error': f"이전 기준일을 찾을 수 없습니다. {current_base_date}보다 이전 데이터가 없습니다."
+                }
+        else:
+            return {
+                'error': f"이전 기준일을 찾을 수 없습니다. {current_base_date}보다 이전 데이터가 없습니다."
+            }
+
+    # 2. 소멸 계약 식별 (이전에는 있었지만 현재는 없는 계약)
+    expired_contracts_query = f"""
+    SELECT
+        t1.REFERENCE_NO,
+        t1.CURRENCY_CD,
+        t1.CUR_PAR_BAL,
+        t1.CUR_RATE,
+        t1.DIM_PROD,
+        t1.DIM_ORG,
+        t1.DIM_ALM
+    FROM ALM_INST t1
+    LEFT JOIN ALM_INST t2
+        ON t1.REFERENCE_NO = t2.REFERENCE_NO
+        AND t2.BASE_DATE LIKE '{current_base_date[:10]}%'
+    WHERE t1.BASE_DATE LIKE '{previous_base_date[:10]}%'
+      AND t2.REFERENCE_NO IS NULL
+    """
+
+    expired_contracts_result = execute_sql_query(expired_contracts_query)
+
+    if not expired_contracts_result['success']:
+        return {
+            'error': f"소멸 계약 조회 실패: {expired_contracts_result['error']}"
+        }
+
+    df = expired_contracts_result['dataframe']
+
+    # 소멸 계약이 없는 경우
+    if len(df) == 0:
+        return {
+            'current_date': current_base_date,
+            'previous_date': previous_base_date,
+            'expired_contracts': {
+                'count': 0,
+                'total_balance': 0,
+                'contracts': []
+            },
+            'dimensional_breakdown': {
+                'by_product': [],
+                'by_org': [],
+                'by_alm': []
+            },
+            'summary': f"{current_base_date} 기준 소멸 계약이 없습니다 (비교: {previous_base_date})"
+        }
+
+    # 기본 통계
+    expired_count = len(df)
+    total_balance = df['CUR_PAR_BAL'].sum() if 'CUR_PAR_BAL' in df.columns else 0
+
+    # 샘플 계약 (최대 5건)
+    sample_contracts = expired_contracts_result['data'][:5]
+
+    # 3. 차원별 집계
+    dimensional_breakdown = {
+        'by_product': [],
+        'by_org': [],
+        'by_alm': []
+    }
+
+    # 기본 차원 설정
+    if group_by_dimensions is None:
+        group_by_dimensions = ['DIM_PROD', 'DIM_ORG', 'DIM_ALM']
+
+    # DIM_PROD별 집계
+    if 'DIM_PROD' in group_by_dimensions:
+        dim_query = f"""
+        SELECT
+            t1.DIM_PROD as 차원값,
+            COUNT(DISTINCT t1.REFERENCE_NO) as 소멸건수,
+            SUM(t1.CUR_PAR_BAL) as 소멸잔액
+        FROM ALM_INST t1
+        LEFT JOIN ALM_INST t2
+            ON t1.REFERENCE_NO = t2.REFERENCE_NO
+            AND t2.BASE_DATE LIKE '{current_base_date[:10]}%'
+        WHERE t1.BASE_DATE LIKE '{previous_base_date[:10]}%'
+          AND t2.REFERENCE_NO IS NULL
+          AND t1.DIM_PROD IS NOT NULL
+        GROUP BY t1.DIM_PROD
+        ORDER BY 소멸잔액 DESC
+        """
+
+        dim_result = execute_sql_query(dim_query)
+        if dim_result['success']:
+            dimensional_breakdown['by_product'] = dim_result['data']
+
+    # DIM_ORG별 집계
+    if 'DIM_ORG' in group_by_dimensions:
+        dim_query = f"""
+        SELECT
+            t1.DIM_ORG as 차원값,
+            COUNT(DISTINCT t1.REFERENCE_NO) as 소멸건수,
+            SUM(t1.CUR_PAR_BAL) as 소멸잔액
+        FROM ALM_INST t1
+        LEFT JOIN ALM_INST t2
+            ON t1.REFERENCE_NO = t2.REFERENCE_NO
+            AND t2.BASE_DATE LIKE '{current_base_date[:10]}%'
+        WHERE t1.BASE_DATE LIKE '{previous_base_date[:10]}%'
+          AND t2.REFERENCE_NO IS NULL
+          AND t1.DIM_ORG IS NOT NULL
+        GROUP BY t1.DIM_ORG
+        ORDER BY 소멸잔액 DESC
+        """
+
+        dim_result = execute_sql_query(dim_query)
+        if dim_result['success']:
+            dimensional_breakdown['by_org'] = dim_result['data']
+
+    # DIM_ALM별 집계
+    if 'DIM_ALM' in group_by_dimensions:
+        dim_query = f"""
+        SELECT
+            t1.DIM_ALM as 차원값,
+            COUNT(DISTINCT t1.REFERENCE_NO) as 소멸건수,
+            SUM(t1.CUR_PAR_BAL) as 소멸잔액
+        FROM ALM_INST t1
+        LEFT JOIN ALM_INST t2
+            ON t1.REFERENCE_NO = t2.REFERENCE_NO
+            AND t2.BASE_DATE LIKE '{current_base_date[:10]}%'
+        WHERE t1.BASE_DATE LIKE '{previous_base_date[:10]}%'
+          AND t2.REFERENCE_NO IS NULL
+          AND t1.DIM_ALM IS NOT NULL
+        GROUP BY t1.DIM_ALM
+        ORDER BY 소멸잔액 DESC
+        """
+
+        dim_result = execute_sql_query(dim_query)
+        if dim_result['success']:
+            dimensional_breakdown['by_alm'] = dim_result['data']
+
+    # 4. 요약 생성
+    summary = f"{current_base_date} 기준 소멸 {expired_count}건, 총 잔액 {total_balance:,.0f} (비교: {previous_base_date})"
+
+    return {
+        'current_date': current_base_date,
+        'previous_date': previous_base_date,
+        'expired_contracts': {
+            'count': expired_count,
+            'total_balance': float(total_balance),
+            'contracts': sample_contracts
+        },
+        'dimensional_breakdown': dimensional_breakdown,
+        'summary': summary
+    }
 
 
 # ============================================================

@@ -23,6 +23,8 @@ SYSTEM_PROMPT = """당신은 ALM(자산부채관리) 데이터 분석 전문가�
 7. compare_scenarios - 여러 시나리오 비교 분석
 8. analyze_trends - 시계열 추세 분석 (환율, 금리)
 9. export_report - 리포트를 PDF/Excel/Markdown으로 내보내기
+10. analyze_new_position_growth - 당월 신규 포지션 증가분 분석 (당월/전월 비교, 차원별 집계)
+11. analyze_expired_position_decrease - 당월 소멸 포지션 감소분 분석 (만기, 상환 등으로 사라진 계약)
 
 작업 지침:
 - 사용자 질문을 분석하여 적절한 도구를 선택하세요

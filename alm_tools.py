@@ -17,7 +17,10 @@ from alm_functions import (
     compare_scenarios,
     analyze_trends,
     generate_comprehensive_report,
-    export_report
+    export_report,
+    analyze_new_position_growth,
+    analyze_expired_position_decrease,
+    get_column_label
 )
 
 # ======================================================================
@@ -69,6 +72,21 @@ class ExportReportInput(BaseModel):
     format: str = Field(default="pdf", description="'pdf', 'excel', 'markdown', 'all' 중 하나")
     output_dir: str = Field(default="./reports", description="저장 디렉토리")
 
+class AnalyzeNewPositionGrowthInput(BaseModel):
+    current_base_date: str = Field(description="현재 기준일 (YYYY-MM-DD 형식)")
+    previous_base_date: str = Field(default="", description="이전 기준일 (공백이면 자동 선택)")
+    group_by_dimensions: str = Field(
+        default="DIM_PROD,DIM_ORG,DIM_ALM",
+        description="그룹화 차원 (콤마로 구분: DIM_PROD,DIM_ORG,DIM_ALM)"
+    )
+
+class AnalyzeExpiredPositionDecreaseInput(BaseModel):
+    current_base_date: str = Field(description="현재 기준일 (YYYY-MM-DD 형식)")
+    previous_base_date: str = Field(default="", description="이전 기준일 (공백이면 자동 선택)")
+    group_by_dimensions: str = Field(
+        default="DIM_PROD,DIM_ORG,DIM_ALM",
+        description="그룹화 차원 (콤마로 구분: DIM_PROD,DIM_ORG,DIM_ALM)"
+    )
 
 
 # 도구 함수들
@@ -195,6 +213,116 @@ def _get_aggregate_stats(params: str) -> str:
         return "오류: 정확히 3개의 파라미터가 필요합니다"
     return get_aggregate_stats(parts[0].strip(), parts[1].strip(), parts[2].strip())
 
+def _analyze_new_position_growth(
+    current_base_date: str = "",
+    previous_base_date: str = "",
+    group_by_dimensions: str = "DIM_PROD,DIM_ORG,DIM_ALM"
+) -> str:
+    """신규 포지션 증가분을 분석합니다."""
+
+    if not current_base_date:
+        return "오류: 현재 기준일(current_base_date)이 필요합니다."
+
+    # 차원 리스트 파싱
+    dims = [d.strip() for d in group_by_dimensions.split(',') if d.strip()]
+
+    # 비즈니스 로직 호출
+    result = analyze_new_position_growth(
+        current_base_date=current_base_date,
+        previous_base_date=previous_base_date if previous_base_date else None,
+        group_by_dimensions=dims if dims else None
+    )
+
+    if 'error' in result:
+        return f"오류: {result['error']}"
+
+    # 결과 포맷팅
+    output_lines = []
+    output_lines.append(f"=== 신규 포지션 증가분 분석 ===\n")
+    output_lines.append(f"기준일: {result['current_date']} (비교: {result['previous_date']})\n")
+
+    output_lines.append(f"\n## 전체 신규 현황")
+    output_lines.append(f"- 신규 계약 건수: {result['new_contracts']['count']}건")
+    output_lines.append(f"- 신규 잔액 합계: {result['new_contracts']['total_balance']:,.0f}\n")
+
+    # 차원별 분석 (컬럼 설명 포함)
+    breakdown = result['dimensional_breakdown']
+
+    if breakdown.get('by_product'):
+        dim_label = get_column_label('DIM_PROD')
+        output_lines.append(f"\n## 상품 차원별 신규 ({dim_label})")
+        for row in breakdown['by_product'][:10]:
+            output_lines.append(f"- {row['차원값']}: {row['신규건수']}건, {row['신규잔액']:,.0f}")
+
+    if breakdown.get('by_org'):
+        dim_label = get_column_label('DIM_ORG')
+        output_lines.append(f"\n## 조직 차원별 신규 ({dim_label})")
+        for row in breakdown['by_org'][:10]:
+            output_lines.append(f"- {row['차원값']}: {row['신규건수']}건, {row['신규잔액']:,.0f}")
+
+    if breakdown.get('by_alm'):
+        dim_label = get_column_label('DIM_ALM')
+        output_lines.append(f"\n## ALM 차원별 신규 ({dim_label})")
+        for row in breakdown['by_alm'][:10]:
+            output_lines.append(f"- {row['차원값']}: {row['신규건수']}건, {row['신규잔액']:,.0f}")
+
+    return '\n'.join(output_lines)
+
+def _analyze_expired_position_decrease(
+    current_base_date: str = "",
+    previous_base_date: str = "",
+    group_by_dimensions: str = "DIM_PROD,DIM_ORG,DIM_ALM"
+) -> str:
+    """소멸 포지션 감소분을 분석합니다."""
+
+    if not current_base_date:
+        return "오류: 현재 기준일(current_base_date)이 필요합니다."
+
+    # 차원 리스트 파싱
+    dims = [d.strip() for d in group_by_dimensions.split(',') if d.strip()]
+
+    # 비즈니스 로직 호출
+    result = analyze_expired_position_decrease(
+        current_base_date=current_base_date,
+        previous_base_date=previous_base_date if previous_base_date else None,
+        group_by_dimensions=dims if dims else None
+    )
+
+    if 'error' in result:
+        return f"오류: {result['error']}"
+
+    # 결과 포맷팅
+    output_lines = []
+    output_lines.append(f"=== 소멸 포지션 감소분 분석 ===\n")
+    output_lines.append(f"기준일: {result['current_date']} (비교: {result['previous_date']})\n")
+
+    output_lines.append(f"\n## 전체 소멸 현황")
+    output_lines.append(f"- 소멸 계약 건수: {result['expired_contracts']['count']}건")
+    output_lines.append(f"- 소멸 잔액 합계: {result['expired_contracts']['total_balance']:,.0f}\n")
+
+    # 차원별 분석 (컬럼 설명 포함)
+    breakdown = result['dimensional_breakdown']
+
+    if breakdown.get('by_product'):
+        dim_label = get_column_label('DIM_PROD')
+        output_lines.append(f"\n## 상품 차원별 소멸 ({dim_label})")
+        for row in breakdown['by_product'][:10]:
+            output_lines.append(f"- {row['차원값']}: {row['소멸건수']}건, {row['소멸잔액']:,.0f}")
+
+    if breakdown.get('by_org'):
+        dim_label = get_column_label('DIM_ORG')
+        output_lines.append(f"\n## 조직 차원별 소멸 ({dim_label})")
+        for row in breakdown['by_org'][:10]:
+            output_lines.append(f"- {row['차원값']}: {row['소멸건수']}건, {row['소멸잔액']:,.0f}")
+
+    if breakdown.get('by_alm'):
+        dim_label = get_column_label('DIM_ALM')
+        output_lines.append(f"\n## ALM 차원별 소멸 ({dim_label})")
+        for row in breakdown['by_alm'][:10]:
+            output_lines.append(f"- {row['차원값']}: {row['소멸건수']}건, {row['소멸잔액']:,.0f}")
+
+    return '\n'.join(output_lines)
+
 # StructuredTool로 도구 생성 (visualize_data 제거됨)
 tools = [
     StructuredTool.from_function(
@@ -250,5 +378,17 @@ tools = [
         name="export_report",
         description="생성된 리포트를 PDF/Excel/Markdown 형식으로 내보냅니다",
         args_schema=ExportReportInput
+    ),
+    StructuredTool.from_function(
+        func=_analyze_new_position_growth,
+        name="analyze_new_position_growth",
+        description="당월 신규 포지션 증가분을 분석합니다. 이전 기준일 대비 새로 추가된 계약(REFERENCE_NO)을 식별하고 차원별로 집계합니다.",
+        args_schema=AnalyzeNewPositionGrowthInput
+    ),
+    StructuredTool.from_function(
+        func=_analyze_expired_position_decrease,
+        name="analyze_expired_position_decrease",
+        description="당월 소멸 포지션 감소분을 분석합니다. 이전 기준일에 존재했지만 현재 기준일에는 사라진 계약(REFERENCE_NO)을 식별하고 차원별로 집계합니다.",
+        args_schema=AnalyzeExpiredPositionDecreaseInput
     ),
 ]
