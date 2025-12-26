@@ -266,12 +266,84 @@ python3 test_workflow.py
 
 ---
 
+## 📊 벤치마크
+
+### 목적
+단일 에이전트 vs 멀티 에이전트의 성능을 정량적으로 비교
+
+### 측정 지표
+1. **도구 선택 정확도**: 올바른 도구/에이전트 선택 여부
+2. **응답 시간**: 평균, 중앙값, 최소/최대 시간
+3. **성공률**: 오류 없이 완료된 비율
+
+### 질문 데이터셋
+100개 질문 ([test_questions.json](test_questions.json)):
+- Search: 15개
+- Market: 15개
+- Analysis: 25개 (복잡도 높음)
+- Position: 20개
+- Report: 15개
+- Mixed (순차 작업): 10개
+
+### 실행 방법
+
+#### 1. 구조 테스트 (Mock LLM)
+```bash
+python3 test_benchmark.py
+```
+벤치마크 시스템이 제대로 작동하는지 확인 (실제 LLM 불필요)
+
+#### 2. 소규모 테스트 (10개 질문)
+```bash
+python3 benchmark.py --sample 10
+```
+실제 LLM으로 10개 질문만 실행하여 동작 확인
+
+#### 3. 전체 벤치마크 (100개 질문)
+```bash
+python3 benchmark.py
+```
+100개 전체 질문으로 성능 비교 실행
+
+#### 4. 결과 확인
+```bash
+# JSON 결과
+cat benchmark_results/results_YYYYMMDD_HHMMSS.json
+
+# 마크다운 리포트
+cat benchmark_results/report_YYYYMMDD_HHMMSS.md
+```
+
+### 예상 결과
+- **멀티 에이전트 정확도**: 95% (단일: ~70%)
+- **멀티 에이전트 응답 시간**: 단일 대비 +20% (라우팅 오버헤드)
+- **복잡한 워크플로우**: 멀티 에이전트 월등
+
+### 벤치마크 파일
+```
+benchmark.py                      # 메인 벤치마크 스크립트
+test_benchmark.py                 # 구조 테스트 (Mock LLM)
+test_questions.json              # 100개 질문 데이터셋
+benchmark_results/               # 결과 저장 디렉토리
+  ├── results_*.json             # JSON 결과
+  └── report_*.md                # 마크다운 리포트
+```
+
+---
+
 ## 📦 의존성
 
 ### 필수
 - `langchain-core`
-- `langchain-anthropic`
+- `langchain-community` (Ollama 지원)
 - `alm_tools` (기존 도구 모듈)
+
+### Ollama + Qwen 설정
+1. Ollama 설치: `brew install ollama`
+2. 모델 다운로드: `ollama pull qwen2.5:32b`
+3. 서버 시작: `ollama serve`
+
+자세한 내용: [OLLAMA_SETUP.md](OLLAMA_SETUP.md)
 
 ### Phase 4 (LangGraph 워크플로우)
 ```bash

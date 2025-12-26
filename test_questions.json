@@ -1,0 +1,804 @@
+{
+  "questions": [
+    {
+      "id": 1,
+      "category": "search",
+      "question": "USD 통화 계약을 검색해줘",
+      "expected_single_agent_tool": "search_alm_contracts",
+      "expected_multi_agent": "search_agent",
+      "difficulty": "easy"
+    },
+    {
+      "id": 2,
+      "category": "search",
+      "question": "2020-06-30 기준일 계약을 찾아줘",
+      "expected_single_agent_tool": "search_alm_contracts",
+      "expected_multi_agent": "search_agent",
+      "difficulty": "easy"
+    },
+    {
+      "id": 3,
+      "category": "search",
+      "question": "DEPOSIT 상품 유형의 계약을 조회해줘",
+      "expected_single_agent_tool": "search_alm_contracts",
+      "expected_multi_agent": "search_agent",
+      "difficulty": "easy"
+    },
+    {
+      "id": 4,
+      "category": "search",
+      "question": "만기일이 2021년 이후인 계약을 검색해줘",
+      "expected_single_agent_tool": "search_alm_contracts",
+      "expected_multi_agent": "search_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 5,
+      "category": "search",
+      "question": "EUR 통화이면서 DEPOSIT 상품인 계약을 찾아줘",
+      "expected_single_agent_tool": "search_alm_contracts",
+      "expected_multi_agent": "search_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 6,
+      "category": "search",
+      "question": "2020년 6월에 생성된 모든 계약을 조회해줘",
+      "expected_single_agent_tool": "search_alm_contracts",
+      "expected_multi_agent": "search_agent",
+      "difficulty": "easy"
+    },
+    {
+      "id": 7,
+      "category": "search",
+      "question": "JPY 통화 계약이 몇 개나 있는지 확인해줘",
+      "expected_single_agent_tool": "search_alm_contracts",
+      "expected_multi_agent": "search_agent",
+      "difficulty": "easy"
+    },
+    {
+      "id": 8,
+      "category": "search",
+      "question": "LOAN 상품 유형 계약을 검색해줘",
+      "expected_single_agent_tool": "search_alm_contracts",
+      "expected_multi_agent": "search_agent",
+      "difficulty": "easy"
+    },
+    {
+      "id": 9,
+      "category": "search",
+      "question": "2020년 상반기에 생성된 계약을 찾아줘",
+      "expected_single_agent_tool": "search_alm_contracts",
+      "expected_multi_agent": "search_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 10,
+      "category": "search",
+      "question": "외화 계약만 조회해줘",
+      "expected_single_agent_tool": "search_alm_contracts",
+      "expected_multi_agent": "search_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 11,
+      "category": "search",
+      "question": "만기일이 2021-12-31인 계약을 검색해줘",
+      "expected_single_agent_tool": "search_alm_contracts",
+      "expected_multi_agent": "search_agent",
+      "difficulty": "easy"
+    },
+    {
+      "id": 12,
+      "category": "search",
+      "question": "USD 또는 EUR 통화 계약을 모두 찾아줘",
+      "expected_single_agent_tool": "search_alm_contracts",
+      "expected_multi_agent": "search_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 13,
+      "category": "search",
+      "question": "계약 ID가 INST001인 계약을 조회해줘",
+      "expected_single_agent_tool": "search_alm_contracts",
+      "expected_multi_agent": "search_agent",
+      "difficulty": "easy"
+    },
+    {
+      "id": 14,
+      "category": "search",
+      "question": "2020년에 만기가 도래하는 계약을 검색해줘",
+      "expected_single_agent_tool": "search_alm_contracts",
+      "expected_multi_agent": "search_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 15,
+      "category": "search",
+      "question": "모든 ALM 계약 목록을 보여줘",
+      "expected_single_agent_tool": "search_alm_contracts",
+      "expected_multi_agent": "search_agent",
+      "difficulty": "easy"
+    },
+    {
+      "id": 16,
+      "category": "market",
+      "question": "USD 환율을 조회해줘",
+      "expected_single_agent_tool": "get_exchange_rate",
+      "expected_multi_agent": "market_agent",
+      "difficulty": "easy"
+    },
+    {
+      "id": 17,
+      "category": "market",
+      "question": "EUR 환율이 얼마인지 확인해줘",
+      "expected_single_agent_tool": "get_exchange_rate",
+      "expected_multi_agent": "market_agent",
+      "difficulty": "easy"
+    },
+    {
+      "id": 18,
+      "category": "market",
+      "question": "1년 만기 금리를 조회해줘",
+      "expected_single_agent_tool": "get_interest_rate",
+      "expected_multi_agent": "market_agent",
+      "difficulty": "easy"
+    },
+    {
+      "id": 19,
+      "category": "market",
+      "question": "3개월 금리가 얼마인지 확인해줘",
+      "expected_single_agent_tool": "get_interest_rate",
+      "expected_multi_agent": "market_agent",
+      "difficulty": "easy"
+    },
+    {
+      "id": 20,
+      "category": "market",
+      "question": "JPY 환율과 1년 금리를 조회해줘",
+      "expected_single_agent_tool": "get_exchange_rate,get_interest_rate",
+      "expected_multi_agent": "market_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 21,
+      "category": "market",
+      "question": "USD 환율과 3개월 금리를 확인해줘",
+      "expected_single_agent_tool": "get_exchange_rate,get_interest_rate",
+      "expected_multi_agent": "market_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 22,
+      "category": "market",
+      "question": "6개월 금리를 조회해줘",
+      "expected_single_agent_tool": "get_interest_rate",
+      "expected_multi_agent": "market_agent",
+      "difficulty": "easy"
+    },
+    {
+      "id": 23,
+      "category": "market",
+      "question": "CNY 환율을 확인해줘",
+      "expected_single_agent_tool": "get_exchange_rate",
+      "expected_multi_agent": "market_agent",
+      "difficulty": "easy"
+    },
+    {
+      "id": 24,
+      "category": "market",
+      "question": "2년 만기 금리가 얼마인지 조회해줘",
+      "expected_single_agent_tool": "get_interest_rate",
+      "expected_multi_agent": "market_agent",
+      "difficulty": "easy"
+    },
+    {
+      "id": 25,
+      "category": "market",
+      "question": "EUR 환율과 6개월 금리를 모두 확인해줘",
+      "expected_single_agent_tool": "get_exchange_rate,get_interest_rate",
+      "expected_multi_agent": "market_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 26,
+      "category": "market",
+      "question": "주요 통화 환율을 모두 조회해줘",
+      "expected_single_agent_tool": "get_exchange_rate",
+      "expected_multi_agent": "market_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 27,
+      "category": "market",
+      "question": "1년과 2년 금리를 비교해줘",
+      "expected_single_agent_tool": "get_interest_rate",
+      "expected_multi_agent": "market_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 28,
+      "category": "market",
+      "question": "GBP 환율을 확인해줘",
+      "expected_single_agent_tool": "get_exchange_rate",
+      "expected_multi_agent": "market_agent",
+      "difficulty": "easy"
+    },
+    {
+      "id": 29,
+      "category": "market",
+      "question": "5년 만기 금리를 조회해줘",
+      "expected_single_agent_tool": "get_interest_rate",
+      "expected_multi_agent": "market_agent",
+      "difficulty": "easy"
+    },
+    {
+      "id": 30,
+      "category": "market",
+      "question": "모든 만기별 금리를 확인해줘",
+      "expected_single_agent_tool": "get_interest_rate",
+      "expected_multi_agent": "market_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 31,
+      "category": "analysis",
+      "question": "유동성 갭을 분석해줘",
+      "expected_single_agent_tool": "analyze_liquidity_gap",
+      "expected_multi_agent": "analysis_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 32,
+      "category": "analysis",
+      "question": "1개월 만기 구간의 유동성 갭을 확인해줘",
+      "expected_single_agent_tool": "analyze_liquidity_gap",
+      "expected_multi_agent": "analysis_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 33,
+      "category": "analysis",
+      "question": "USD 통화의 유동성 갭을 분석해줘",
+      "expected_single_agent_tool": "analyze_liquidity_gap",
+      "expected_multi_agent": "analysis_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 34,
+      "category": "analysis",
+      "question": "집계 통계를 조회해줘",
+      "expected_single_agent_tool": "get_aggregate_stats",
+      "expected_multi_agent": "analysis_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 35,
+      "category": "analysis",
+      "question": "통화별 집계 통계를 확인해줘",
+      "expected_single_agent_tool": "get_aggregate_stats",
+      "expected_multi_agent": "analysis_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 36,
+      "category": "analysis",
+      "question": "상품 유형별 집계 통계를 분석해줘",
+      "expected_single_agent_tool": "get_aggregate_stats",
+      "expected_multi_agent": "analysis_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 37,
+      "category": "analysis",
+      "question": "시나리오 1과 2를 비교해줘",
+      "expected_single_agent_tool": "compare_scenarios",
+      "expected_multi_agent": "analysis_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 38,
+      "category": "analysis",
+      "question": "기준 시나리오와 스트레스 시나리오를 비교 분석해줘",
+      "expected_single_agent_tool": "compare_scenarios",
+      "expected_multi_agent": "analysis_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 39,
+      "category": "analysis",
+      "question": "금리 변동에 따른 시나리오를 비교해줘",
+      "expected_single_agent_tool": "compare_scenarios",
+      "expected_multi_agent": "analysis_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 40,
+      "category": "analysis",
+      "question": "트렌드를 분석해줘",
+      "expected_single_agent_tool": "analyze_trends",
+      "expected_multi_agent": "analysis_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 41,
+      "category": "analysis",
+      "question": "월별 트렌드를 확인해줘",
+      "expected_single_agent_tool": "analyze_trends",
+      "expected_multi_agent": "analysis_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 42,
+      "category": "analysis",
+      "question": "분기별 트렌드를 분석해줘",
+      "expected_single_agent_tool": "analyze_trends",
+      "expected_multi_agent": "analysis_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 43,
+      "category": "analysis",
+      "question": "유동성 갭과 집계 통계를 함께 분석해줘",
+      "expected_single_agent_tool": "analyze_liquidity_gap,get_aggregate_stats",
+      "expected_multi_agent": "analysis_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 44,
+      "category": "analysis",
+      "question": "EUR 통화의 유동성 갭을 분석해줘",
+      "expected_single_agent_tool": "analyze_liquidity_gap",
+      "expected_multi_agent": "analysis_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 45,
+      "category": "analysis",
+      "question": "3개월 만기 구간의 유동성 갭을 확인해줘",
+      "expected_single_agent_tool": "analyze_liquidity_gap",
+      "expected_multi_agent": "analysis_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 46,
+      "category": "analysis",
+      "question": "만기별 집계 통계를 조회해줘",
+      "expected_single_agent_tool": "get_aggregate_stats",
+      "expected_multi_agent": "analysis_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 47,
+      "category": "analysis",
+      "question": "낙관 시나리오와 비관 시나리오를 비교해줘",
+      "expected_single_agent_tool": "compare_scenarios",
+      "expected_multi_agent": "analysis_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 48,
+      "category": "analysis",
+      "question": "연도별 트렌드를 분석해줘",
+      "expected_single_agent_tool": "analyze_trends",
+      "expected_multi_agent": "analysis_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 49,
+      "category": "analysis",
+      "question": "JPY 통화의 집계 통계를 확인해줘",
+      "expected_single_agent_tool": "get_aggregate_stats",
+      "expected_multi_agent": "analysis_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 50,
+      "category": "analysis",
+      "question": "6개월 만기 구간의 유동성 갭을 분석해줘",
+      "expected_single_agent_tool": "analyze_liquidity_gap",
+      "expected_multi_agent": "analysis_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 51,
+      "category": "analysis",
+      "question": "시나리오 A, B, C를 비교 분석해줘",
+      "expected_single_agent_tool": "compare_scenarios",
+      "expected_multi_agent": "analysis_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 52,
+      "category": "analysis",
+      "question": "전체 통화의 집계 통계를 확인해줘",
+      "expected_single_agent_tool": "get_aggregate_stats",
+      "expected_multi_agent": "analysis_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 53,
+      "category": "analysis",
+      "question": "1년 만기 구간의 유동성 갭을 분석해줘",
+      "expected_single_agent_tool": "analyze_liquidity_gap",
+      "expected_multi_agent": "analysis_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 54,
+      "category": "analysis",
+      "question": "계절별 트렌드를 확인해줘",
+      "expected_single_agent_tool": "analyze_trends",
+      "expected_multi_agent": "analysis_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 55,
+      "category": "analysis",
+      "question": "모든 시나리오를 종합 비교해줘",
+      "expected_single_agent_tool": "compare_scenarios",
+      "expected_multi_agent": "analysis_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 56,
+      "category": "position",
+      "question": "신규 포지션을 분석해줘",
+      "expected_single_agent_tool": "analyze_new_position_growth",
+      "expected_multi_agent": "position_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 57,
+      "category": "position",
+      "question": "신규 포지션 증가를 확인해줘",
+      "expected_single_agent_tool": "analyze_new_position_growth",
+      "expected_multi_agent": "position_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 58,
+      "category": "position",
+      "question": "2020-06-30 기준일의 신규 포지션을 분석해줘",
+      "expected_single_agent_tool": "analyze_new_position_growth",
+      "expected_multi_agent": "position_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 59,
+      "category": "position",
+      "question": "소멸 포지션을 분석해줘",
+      "expected_single_agent_tool": "analyze_expired_position_decrease",
+      "expected_multi_agent": "position_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 60,
+      "category": "position",
+      "question": "소멸 포지션 감소를 확인해줘",
+      "expected_single_agent_tool": "analyze_expired_position_decrease",
+      "expected_multi_agent": "position_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 61,
+      "category": "position",
+      "question": "2020-06-30 기준일의 소멸 포지션을 분석해줘",
+      "expected_single_agent_tool": "analyze_expired_position_decrease",
+      "expected_multi_agent": "position_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 62,
+      "category": "position",
+      "question": "신규 포지션과 소멸 포지션을 비교해줘",
+      "expected_single_agent_tool": "analyze_new_position_growth,analyze_expired_position_decrease",
+      "expected_multi_agent": "position_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 63,
+      "category": "position",
+      "question": "포지션 증감을 분석해줘",
+      "expected_single_agent_tool": "analyze_new_position_growth,analyze_expired_position_decrease",
+      "expected_multi_agent": "position_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 64,
+      "category": "position",
+      "question": "USD 통화의 신규 포지션을 확인해줘",
+      "expected_single_agent_tool": "analyze_new_position_growth",
+      "expected_multi_agent": "position_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 65,
+      "category": "position",
+      "question": "EUR 통화의 소멸 포지션을 분석해줘",
+      "expected_single_agent_tool": "analyze_expired_position_decrease",
+      "expected_multi_agent": "position_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 66,
+      "category": "position",
+      "question": "월별 신규 포지션 증가를 확인해줘",
+      "expected_single_agent_tool": "analyze_new_position_growth",
+      "expected_multi_agent": "position_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 67,
+      "category": "position",
+      "question": "월별 소멸 포지션 감소를 분석해줘",
+      "expected_single_agent_tool": "analyze_expired_position_decrease",
+      "expected_multi_agent": "position_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 68,
+      "category": "position",
+      "question": "JPY 통화의 포지션 증감을 확인해줘",
+      "expected_single_agent_tool": "analyze_new_position_growth,analyze_expired_position_decrease",
+      "expected_multi_agent": "position_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 69,
+      "category": "position",
+      "question": "DEPOSIT 상품의 신규 포지션을 분석해줘",
+      "expected_single_agent_tool": "analyze_new_position_growth",
+      "expected_multi_agent": "position_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 70,
+      "category": "position",
+      "question": "LOAN 상품의 소멸 포지션을 확인해줘",
+      "expected_single_agent_tool": "analyze_expired_position_decrease",
+      "expected_multi_agent": "position_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 71,
+      "category": "position",
+      "question": "분기별 신규 포지션을 분석해줘",
+      "expected_single_agent_tool": "analyze_new_position_growth",
+      "expected_multi_agent": "position_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 72,
+      "category": "position",
+      "question": "분기별 소멸 포지션을 확인해줘",
+      "expected_single_agent_tool": "analyze_expired_position_decrease",
+      "expected_multi_agent": "position_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 73,
+      "category": "position",
+      "question": "전체 통화의 포지션 증감을 비교해줘",
+      "expected_single_agent_tool": "analyze_new_position_growth,analyze_expired_position_decrease",
+      "expected_multi_agent": "position_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 74,
+      "category": "position",
+      "question": "상품별 신규 포지션을 분석해줘",
+      "expected_single_agent_tool": "analyze_new_position_growth",
+      "expected_multi_agent": "position_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 75,
+      "category": "position",
+      "question": "상품별 소멸 포지션을 확인해줘",
+      "expected_single_agent_tool": "analyze_expired_position_decrease",
+      "expected_multi_agent": "position_agent",
+      "difficulty": "medium"
+    },
+    {
+      "id": 76,
+      "category": "report",
+      "question": "종합 리포트를 생성해줘",
+      "expected_single_agent_tool": "generate_comprehensive_report",
+      "expected_multi_agent": "report_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 77,
+      "category": "report",
+      "question": "ALM 리포트를 만들어줘",
+      "expected_single_agent_tool": "generate_comprehensive_report",
+      "expected_multi_agent": "report_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 78,
+      "category": "report",
+      "question": "전체 리포트를 생성해줘",
+      "expected_single_agent_tool": "generate_comprehensive_report",
+      "expected_multi_agent": "report_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 79,
+      "category": "report",
+      "question": "2020-06-30 기준 리포트를 작성해줘",
+      "expected_single_agent_tool": "generate_comprehensive_report",
+      "expected_multi_agent": "report_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 80,
+      "category": "report",
+      "question": "USD 통화 리포트를 생성해줘",
+      "expected_single_agent_tool": "generate_comprehensive_report",
+      "expected_multi_agent": "report_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 81,
+      "category": "report",
+      "question": "유동성 갭 리포트를 만들어줘",
+      "expected_single_agent_tool": "generate_comprehensive_report",
+      "expected_multi_agent": "report_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 82,
+      "category": "report",
+      "question": "시나리오 비교 리포트를 생성해줘",
+      "expected_single_agent_tool": "generate_comprehensive_report",
+      "expected_multi_agent": "report_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 83,
+      "category": "report",
+      "question": "트렌드 분석 리포트를 작성해줘",
+      "expected_single_agent_tool": "generate_comprehensive_report",
+      "expected_multi_agent": "report_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 84,
+      "category": "report",
+      "question": "포지션 증감 리포트를 만들어줘",
+      "expected_single_agent_tool": "generate_comprehensive_report",
+      "expected_multi_agent": "report_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 85,
+      "category": "report",
+      "question": "월간 ALM 리포트를 생성해줘",
+      "expected_single_agent_tool": "generate_comprehensive_report",
+      "expected_multi_agent": "report_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 86,
+      "category": "report",
+      "question": "분기 리포트를 작성해줘",
+      "expected_single_agent_tool": "generate_comprehensive_report",
+      "expected_multi_agent": "report_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 87,
+      "category": "report",
+      "question": "상세 리포트를 생성해줘",
+      "expected_single_agent_tool": "generate_comprehensive_report",
+      "expected_multi_agent": "report_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 88,
+      "category": "report",
+      "question": "요약 리포트를 만들어줘",
+      "expected_single_agent_tool": "generate_comprehensive_report",
+      "expected_multi_agent": "report_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 89,
+      "category": "report",
+      "question": "경영진 보고용 리포트를 작성해줘",
+      "expected_single_agent_tool": "generate_comprehensive_report",
+      "expected_multi_agent": "report_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 90,
+      "category": "report",
+      "question": "통합 리포트를 생성해줘",
+      "expected_single_agent_tool": "generate_comprehensive_report",
+      "expected_multi_agent": "report_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 91,
+      "category": "mixed",
+      "question": "유동성 갭을 분석하고 리포트를 생성해줘",
+      "expected_single_agent_tool": "analyze_liquidity_gap,generate_comprehensive_report",
+      "expected_multi_agent": "analysis_agent,report_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 92,
+      "category": "mixed",
+      "question": "시나리오를 비교하고 리포트를 만들어줘",
+      "expected_single_agent_tool": "compare_scenarios,generate_comprehensive_report",
+      "expected_multi_agent": "analysis_agent,report_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 93,
+      "category": "mixed",
+      "question": "포지션 증감을 분석하고 리포트를 작성해줘",
+      "expected_single_agent_tool": "analyze_new_position_growth,analyze_expired_position_decrease,generate_comprehensive_report",
+      "expected_multi_agent": "position_agent,report_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 94,
+      "category": "mixed",
+      "question": "USD 계약을 검색하고 환율을 확인한 후 유동성 갭을 분석해줘",
+      "expected_single_agent_tool": "search_alm_contracts,get_exchange_rate,analyze_liquidity_gap",
+      "expected_multi_agent": "search_agent,market_agent,analysis_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 95,
+      "category": "mixed",
+      "question": "집계 통계를 확인하고 트렌드를 분석한 후 리포트를 생성해줘",
+      "expected_single_agent_tool": "get_aggregate_stats,analyze_trends,generate_comprehensive_report",
+      "expected_multi_agent": "analysis_agent,report_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 96,
+      "category": "mixed",
+      "question": "신규 포지션을 분석하고 리포트를 Excel로 내보내줘",
+      "expected_single_agent_tool": "analyze_new_position_growth,generate_comprehensive_report,export_report",
+      "expected_multi_agent": "position_agent,report_agent,export_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 97,
+      "category": "mixed",
+      "question": "EUR 환율과 금리를 조회하고 유동성 갭을 분석해줘",
+      "expected_single_agent_tool": "get_exchange_rate,get_interest_rate,analyze_liquidity_gap",
+      "expected_multi_agent": "market_agent,analysis_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 98,
+      "category": "mixed",
+      "question": "통화별 통계를 확인하고 시나리오를 비교한 후 리포트를 PDF로 내보내줘",
+      "expected_single_agent_tool": "get_aggregate_stats,compare_scenarios,generate_comprehensive_report,export_report",
+      "expected_multi_agent": "analysis_agent,report_agent,export_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 99,
+      "category": "mixed",
+      "question": "모든 계약을 검색하고 트렌드를 분석한 후 리포트를 생성해줘",
+      "expected_single_agent_tool": "search_alm_contracts,analyze_trends,generate_comprehensive_report",
+      "expected_multi_agent": "search_agent,analysis_agent,report_agent",
+      "difficulty": "high"
+    },
+    {
+      "id": 100,
+      "category": "mixed",
+      "question": "포지션 증감과 유동성 갭을 모두 분석하고 종합 리포트를 Markdown으로 내보내줘",
+      "expected_single_agent_tool": "analyze_new_position_growth,analyze_expired_position_decrease,analyze_liquidity_gap,generate_comprehensive_report,export_report",
+      "expected_multi_agent": "position_agent,analysis_agent,report_agent,export_agent",
+      "difficulty": "high"
+    }
+  ]
+}
